@@ -35,7 +35,15 @@ import team.unnamed.creative.base.CubeFace;
 import team.unnamed.creative.base.Vector2Float;
 import team.unnamed.creative.base.Vector3Float;
 import team.unnamed.creative.metadata.pack.PackFormat;
-import team.unnamed.creative.model.*;
+import team.unnamed.creative.model.Element;
+import team.unnamed.creative.model.ElementFace;
+import team.unnamed.creative.model.ElementRotation;
+import team.unnamed.creative.model.ItemOverride;
+import team.unnamed.creative.model.ItemPredicate;
+import team.unnamed.creative.model.ItemTransform;
+import team.unnamed.creative.model.Model;
+import team.unnamed.creative.model.ModelTexture;
+import team.unnamed.creative.model.ModelTextures;
 import team.unnamed.creative.overlay.ResourceContainer;
 import team.unnamed.creative.serialize.minecraft.GsonUtil;
 import team.unnamed.creative.serialize.minecraft.ResourceCategoryImpl;
@@ -50,7 +58,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 
 @ApiStatus.Internal
 public final class ModelSerializer implements JsonResourceSerializer<Model>, JsonResourceDeserializer<Model> {
@@ -95,11 +102,12 @@ public final class ModelSerializer implements JsonResourceSerializer<Model>, Jso
         List<Element> elements = model.elements();
         if (!elements.isEmpty()) {
             writer.name("elements").beginArray();
-            boolean writeLegacy = packFormat.minVersion().major() < 75;
-            if (!writeLegacy) for (Element element : elements) {
+            boolean writeLegacy = packFormat.min().major() < 75;
+
+            if (writeLegacy) for (Element element : elements) {
                 ElementRotation rotation = element.rotation();
                 if (rotation == null) continue;
-                writeLegacy = !rotation.containsModernRotation();
+                writeLegacy = rotation.containsLegacyRotation(writeLegacy);
             }
             for (Element element : elements) {
                 writeElement(writer, element, writeLegacy);
@@ -347,7 +355,7 @@ public final class ModelSerializer implements JsonResourceSerializer<Model>, Jso
             Axis3D axis = Axis3D.valueOf(objectNode.get("axis").getAsString().toUpperCase(Locale.ROOT));
             float angle = objectNode.get("angle").getAsFloat();
             float abs = Math.abs(angle);
-            if ((packFormat.minVersion().major() < 75) && (abs > 45f || abs < -45f)) {
+            if ((packFormat.min().major() < 75) && (abs > 45f || abs < -45f)) {
                 throw new IllegalArgumentException("Angle must be between [-45.0, 45.0] (inclusive), but was " + abs);
             }
             rotation = Vector3Float.ZERO.with(axis, angle);

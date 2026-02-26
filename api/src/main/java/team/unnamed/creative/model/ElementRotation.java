@@ -54,12 +54,42 @@ public record ElementRotation(Vector3Float origin, Vector3Float rotation, boolea
         this.rescale = rescale;
     }
 
-    public boolean containsModernRotation() {
-        if (rotation.equals(Vector3Float.ZERO)) return false;
-        if (rotation.x() < -45f || rotation.x() > 45f) return true;
-        if (rotation.y() < -45f || rotation.y() > 45f) return true;
-        if (rotation.z() < -45f || rotation.z() > 45f) return true;
-        return false;
+    public boolean containsLegacyRotation(boolean writeLegacy) {
+        float x = rotation.x();
+        float y = rotation.y();
+        float z = rotation.z();
+
+        float min = -45f;
+        float max = 45f;
+        float step = 22.5f;
+        float epsilon = 0.0001f;
+
+        // If all are 0 → keep previous state
+        if (Math.abs(x) < epsilon && Math.abs(y) < epsilon && Math.abs(z) < epsilon) return writeLegacy;
+
+        // Must be within range -45..45
+        if (x < min || x > max) return false;
+        if (y < min || y > max) return false;
+        if (z < min || z > max) return false;
+
+        // Only one axis may be non-zero
+        int nonZeroCount = 0;
+        if (Math.abs(x) > epsilon) nonZeroCount++;
+        if (Math.abs(y) > epsilon) nonZeroCount++;
+        if (Math.abs(z) > epsilon) nonZeroCount++;
+        if (nonZeroCount > 1) return false;
+
+        // Must be increment of 22.5
+        if (!isMultipleOfStep(x, step, epsilon)) return false;
+        if (!isMultipleOfStep(y, step, epsilon)) return false;
+        if (!isMultipleOfStep(z, step, epsilon)) return false;
+
+        return writeLegacy;
+    }
+
+    private boolean isMultipleOfStep(float value, float step, float epsilon) {
+        float quotient = value / step;
+        return Math.abs(quotient - Math.round(quotient)) < epsilon;
     }
 
     /**
