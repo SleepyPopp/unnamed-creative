@@ -28,6 +28,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import team.unnamed.creative.metadata.pack.FormatVersion;
 import team.unnamed.creative.metadata.pack.PackFormat;
 import team.unnamed.creative.metadata.pack.PackMeta;
 
@@ -39,11 +40,11 @@ class PackMetaTest {
     @DisplayName("Test pack meta serialization")
     void test_simple_serialization() {
         PackMeta packMeta = PackMeta.of(
-                PackFormat.format(7),
+                PackFormat.format(FormatVersion.parse("7")),
                 Component.text("Description!")
         );
         assertEquals(
-                "{\"pack_format\":7,\"description\":\"Description!\"}",
+                "{\"description\":\"Description!\",\"pack_format\":7}",
                 PackMetaCodec.INSTANCE.toJson(packMeta)
         );
     }
@@ -52,11 +53,11 @@ class PackMetaTest {
     @DisplayName("Test pack meta serialization with version range")
     void test_version_range_serialization() {
         PackMeta packMeta = PackMeta.of(
-                PackFormat.format(18, 20),
+                PackFormat.format(FormatVersion.parse("18"), FormatVersion.parse("20")),
                 Component.text("Description!")
         );
         assertEquals(
-                "{\"pack_format\":18,\"description\":\"Description!\",\"supported_formats\":[18,20]}",
+                "{\"description\":\"Description!\",\"pack_format\":18,\"supported_formats\":[18,20]}",
                 PackMetaCodec.INSTANCE.toJson(packMeta)
         );
     }
@@ -65,7 +66,7 @@ class PackMetaTest {
     @DisplayName("Test pack meta serialization with component description")
     void test_complex_description_serialization() {
         PackMeta packMeta = PackMeta.of(
-                PackFormat.format(12),
+                PackFormat.format(FormatVersion.parse("12")),
                 Component.text()
                         .append(Component.text("Unnamed Team", TextColor.color(0xff8df8)))
                         .append(Component.text(" ftw ", NamedTextColor.GRAY))
@@ -74,7 +75,7 @@ class PackMetaTest {
         );
 
         assertEquals(
-                "{\"pack_format\":12,\"description\":{\"extra\":[{\"color\":\"#FF8DF8\",\"text\":\"Unnamed Team\"},{\"color\":\"gray\",\"text\":\" ftw \"},{\"keybind\":\"i.dont.know\"}],\"text\":\"\"}}",
+                "{\"description\":{\"extra\":[{\"color\":\"#FF8DF8\",\"text\":\"Unnamed Team\"},{\"color\":\"gray\",\"text\":\" ftw \"},{\"keybind\":\"i.dont.know\"}],\"text\":\"\"},\"pack_format\":12}",
                 PackMetaCodec.INSTANCE.toJson(packMeta)
         );
     }
@@ -83,7 +84,7 @@ class PackMetaTest {
     @DisplayName("Test pack meta serialization with version range and component description")
     void test_combined_serialization() {
         PackMeta packMeta = PackMeta.of(
-                PackFormat.format(18, 20),
+                PackFormat.format(FormatVersion.parse("18"), FormatVersion.parse("20")),
                 Component.text()
                         .append(Component.text("Unnamed Team", TextColor.color(0xff8df8)))
                         .append(Component.text(" ftw ", NamedTextColor.GRAY))
@@ -92,7 +93,7 @@ class PackMetaTest {
         );
 
         assertEquals(
-                "{\"pack_format\":18,\"description\":{\"extra\":[{\"color\":\"#FF8DF8\",\"text\":\"Unnamed Team\"},{\"color\":\"gray\",\"text\":\" ftw \"},{\"keybind\":\"i.dont.know\"}],\"text\":\"\"},\"supported_formats\":[18,20]}",
+                "{\"description\":{\"extra\":[{\"color\":\"#FF8DF8\",\"text\":\"Unnamed Team\"},{\"color\":\"gray\",\"text\":\" ftw \"},{\"keybind\":\"i.dont.know\"}],\"text\":\"\"},\"pack_format\":18,\"supported_formats\":[18,20]}",
                 PackMetaCodec.INSTANCE.toJson(packMeta)
         );
     }
@@ -100,10 +101,10 @@ class PackMetaTest {
     @Test
     @DisplayName("Test simple pack meta deserialization")
     void test_simple_deserialization() {
-        PackMeta packMeta = PackMetaCodec.INSTANCE.fromJson("{\"pack_format\":7,\"description\":\"Description!\"}");
+        PackMeta packMeta = PackMetaCodec.INSTANCE.fromJson("{\"description\":\"Description!\",\"pack_format\":7}");
         assertEquals(
                 PackMeta.of(
-                        PackFormat.format(7),
+                        PackFormat.format(FormatVersion.parse("7")),
                         Component.text("Description!")
                 ),
                 packMeta
@@ -113,10 +114,10 @@ class PackMetaTest {
     @Test
     @DisplayName("Test pack meta deserialization with version range")
     void test_version_range_deserialization() {
-        PackMeta packMeta = PackMetaCodec.INSTANCE.fromJson("{\"pack_format\":18,\"description\":\"Description!\",\"supported_formats\":[18,20]}");
+        PackMeta packMeta = PackMetaCodec.INSTANCE.fromJson("{\"description\":\"Description!\",\"pack_format\":18,\"supported_formats\":[18,20]}");
         assertEquals(
                 PackMeta.of(
-                        PackFormat.format(18, 20),
+                        PackFormat.format(FormatVersion.parse("18"), FormatVersion.parse("20")),
                         Component.text("Description!")
                 ),
                 packMeta
@@ -126,10 +127,10 @@ class PackMetaTest {
     @Test
     @DisplayName("Test pack meta deserialization with component description")
     void test_complex_description_deserialization() {
-        PackMeta packMeta = PackMetaCodec.INSTANCE.fromJson("{\"pack_format\":12,\"description\":{\"extra\":[{\"color\":\"#FF8DF8\",\"text\":\"Unnamed Team\"},{\"color\":\"gray\",\"text\":\" ftw \"},{\"keybind\":\"i.dont.know\"}],\"text\":\"\"}}");
+        PackMeta packMeta = PackMetaCodec.INSTANCE.fromJson("{\"description\":{\"extra\":[{\"color\":\"#FF8DF8\",\"text\":\"Unnamed Team\"},{\"color\":\"gray\",\"text\":\" ftw \"},{\"keybind\":\"i.dont.know\"}],\"text\":\"\"},\"pack_format\":12}");
         assertEquals(
                 PackMeta.of(
-                        PackFormat.format(12),
+                        PackFormat.format(FormatVersion.parse("12")),
                         Component.text()
                                 .append(Component.text("Unnamed Team", TextColor.color(0xff8df8)))
                                 .append(Component.text(" ftw ", NamedTextColor.GRAY))
@@ -143,10 +144,10 @@ class PackMetaTest {
     @Test
     @DisplayName("Test pack meta deserialization with version range and component description")
     void test_combined_deserialization() {
-        PackMeta packMeta = PackMetaCodec.INSTANCE.fromJson("{\"pack_format\":18,\"description\":{\"extra\":[{\"color\":\"#FF8DF8\",\"text\":\"Unnamed Team\"},{\"color\":\"gray\",\"text\":\" ftw \"},{\"keybind\":\"i.dont.know\"}],\"text\":\"\"},\"supported_formats\":[18,20]}");
+        PackMeta packMeta = PackMetaCodec.INSTANCE.fromJson("{\"description\":{\"extra\":[{\"color\":\"#FF8DF8\",\"text\":\"Unnamed Team\"},{\"color\":\"gray\",\"text\":\" ftw \"},{\"keybind\":\"i.dont.know\"}],\"text\":\"\"},\"pack_format\":18,\"supported_formats\":[18,20]}");
         assertEquals(
                 PackMeta.of(
-                        PackFormat.format(18, 20),
+                        PackFormat.format(FormatVersion.parse("18"), FormatVersion.parse("20")),
                         Component.text()
                                 .append(Component.text("Unnamed Team", TextColor.color(0xff8df8)))
                                 .append(Component.text(" ftw ", NamedTextColor.GRAY))

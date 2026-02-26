@@ -24,10 +24,13 @@
 package team.unnamed.creative.serialize.minecraft.resourcepack;
 
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.Component;
 import org.junit.jupiter.api.Test;
 import team.unnamed.creative.ResourcePack;
 import team.unnamed.creative.base.Writable;
 import team.unnamed.creative.font.FontProvider;
+import team.unnamed.creative.metadata.pack.FormatVersion;
+import team.unnamed.creative.metadata.pack.PackFormat;
 import team.unnamed.creative.serialize.minecraft.MinecraftResourcePackReader;
 import team.unnamed.creative.serialize.minecraft.MinecraftResourcePackWriter;
 import team.unnamed.creative.serialize.minecraft.fs.FileTreeReader;
@@ -51,26 +54,26 @@ class ResourcePackEqualityTest {
     void test() {
         assertResourcePackZipsToTheSameFile(
                 "Test with pack meta only",
-                pack -> pack.packMeta(30, "This is the a resource-pack")
+                pack -> pack.packMeta(PackFormat.format(FormatVersion.parse("30")), Component.text("This is the a resource-pack"))
         );
 
         assertResourcePackZipsToTheSameFile(
                 "Test with pack meta and textures",
-                pack -> pack.packMeta(18, "This is another resource-pack"),
+                pack -> pack.packMeta(PackFormat.format(FormatVersion.parse("18")), Component.text("This is another resource-pack")),
                 pack -> pack.texture(Texture.texture(Key.key("minecraft:test_texture"), Writable.EMPTY)),
                 pack -> pack.texture(Texture.texture(Key.key("minecraft:another_texture"), Writable.stringUtf8("asddasd")))
         );
 
         assertResourcePackZipsToTheSameFile(
                 "Test with unknown files",
-                pack -> pack.packMeta(18, "This is a test with unknown files"),
+                pack -> pack.packMeta(PackFormat.format(FormatVersion.parse("18")), Component.text("This is a test with unknown files")),
                 pack -> pack.unknownFile("license.txt", Writable.stringUtf8("CC0 License")),
                 pack -> pack.unknownFile("credits.txt", Writable.stringUtf8("Unnamed Team"))
         );
 
         assertResourcePackZipsToTheSameFile(
                 "Test with fonts",
-                pack -> pack.packMeta(18, "This is a test with fonts"),
+                pack -> pack.packMeta(PackFormat.format(FormatVersion.parse("18")), Component.text("This is a test with fonts")),
                 pack -> pack.font(Key.key("minecraft:default"), FontProvider.bitMap(Key.key("file.png"), 8, 6, Arrays.asList("asd", "fjm")))
         );
     }
